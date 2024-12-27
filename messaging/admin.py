@@ -5,8 +5,8 @@ from .models import AppUsers, RealTimeMessages, ChatGroup, MessageStatus
 
 @admin.register(AppUsers)
 class AppUsersAdmin(admin.ModelAdmin):
-    list_display = ('app_user_id', 'username', 'email_id', 'mobile_no', 'profile_picture', 'is_active', 'is_staff', 'date_joined')
-    search_fields = ('username', 'email_id', 'mobile_no')
+    list_display = ('app_user_id', 'username', 'mobile_no', 'profile_picture', 'is_active', 'is_staff', 'date_joined')
+    search_fields = ('username', 'mobile_no')
     list_filter = ('is_active', 'is_staff', 'date_joined')
 
 @admin.register(RealTimeMessages)

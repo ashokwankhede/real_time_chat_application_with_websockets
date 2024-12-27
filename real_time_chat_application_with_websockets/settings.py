@@ -27,13 +27,18 @@ SECRET_KEY = 'django-insecure-fk)%dk3uy$a$i6bk#078qsj42z3+_t)d**3jf%7mwa@3m1g%bw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*","d45c-42-110-174-82.ngrok-free.app"]
+CSRF_TRUSTED_ORIGINS = [
+    'https://d45c-42-110-174-82.ngrok-free.app',
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
     'daphne',
+    'rest_framework',
+    'rest_framework_simplejwt',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -74,6 +79,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'real_time_chat_application_with_websockets.wsgi.application'
 ASGI_APPLICATION = "real_time_chat_application_with_websockets.asgi.application"
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

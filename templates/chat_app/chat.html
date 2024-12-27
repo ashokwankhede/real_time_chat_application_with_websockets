@@ -5,20 +5,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Room</title>
+    <h1>Welcome, {{ user.username }}!</h1>
+    <p>You have successfully logged in.</p>
+    <label for="">Select Contact: </label>
+    <select name="receiverName" id="receiverName"> 
+        {% for user in users %}
+            <option value="{{user.username}}">{{user.username}}</option>
+        {% endfor %}
+    </select>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        const socket = new WebSocket('ws://' + window.location.host + '/chat/');
-
+        const user = "{{ user.id }}"; // Ensure user ID is used, not username
+        console.log("User ID:", user);
+    
+        const socket = new WebSocket(`wss://${window.location.host}/chat/?user_id=${user}`);
+    
         socket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.getElementById('chat-box').innerHTML += "<p>" + data.message + "</p>";
+            const sender = data.sender; // Sender of the message
+            const message = data.message;
+    
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<p><strong>${sender === user ? 'You' : sender}:</strong> ${message}</p>`;
+            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
         };
-
+    
         function sendMessage() {
+            const receiverName = document.getElementById('receiverName').value; // Get selected receiver
             const message = document.getElementById('message-input').value;
-            socket.send(JSON.stringify({ 'message': message }));
+    
+            if (!receiverName || !message) {
+                alert("Please select a receiver and type a message.");
+                return;
+            }
+    
+            socket.send(JSON.stringify({ 
+                'message': message, 
+                'receiver_id': receiverName 
+            }));
             document.getElementById('message-input').value = '';
         }
     </script>
+    
 </head>
 <body>
     <div id="chat-box" style="border: 1px solid #000; height: 400px; overflow-y: scroll;">
