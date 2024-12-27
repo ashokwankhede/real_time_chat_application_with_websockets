@@ -1,0 +1,30 @@
+<!-- chat.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <script>
+        const socket = new WebSocket('ws://' + window.location.host + '/chat/');
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.getElementById('chat-box').innerHTML += "<p>" + data.message + "</p>";
+        };
+
+        function sendMessage() {
+            const message = document.getElementById('message-input').value;
+            socket.send(JSON.stringify({ 'message': message }));
+            document.getElementById('message-input').value = '';
+        }
+    </script>
+</head>
+<body>
+    <div id="chat-box" style="border: 1px solid #000; height: 400px; overflow-y: scroll;">
+        <!-- Messages will appear here -->
+    </div>
+    <input type="text" id="message-input" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+</body>
+</html>
