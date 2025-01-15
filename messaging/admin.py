@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AppUsers, RealTimeMessages, ChatGroup, MessageStatus
+from .models import AppUsers, RealTimeMessages, ChatGroup, ReadRecipient
 
 # Register your models here.
 
@@ -11,22 +11,21 @@ class AppUsersAdmin(admin.ModelAdmin):
 
 @admin.register(RealTimeMessages)
 class RealTimeMessagesAdmin(admin.ModelAdmin):
-    list_display = ('message_id', 'sender', 'receiver', 'group', 'content', 'content_type', 'timestamp')
+    list_display = ('message_id', 'sender', 'receiver', 'group', 'content', 'content_type', 'status', 'timestamp')
 
-    search_fields = ('content', 'content_type')
-    list_filter = ('sender', 'receiver', 'group', 'content_type', 'status', 'timestamp')
+    search_fields = ('content', 'content_type', 'status')
+    list_filter = ('sender', 'receiver', 'group', 'content_type', 'timestamp', 'status')
+
+
+
+@admin.register(ReadRecipient)
+class MessageStatusAdmin(admin.ModelAdmin):
+    list_display = ('message', 'recipient', 'status', 'timestamp')
+    search_fields = ('message', 'recipient', 'status')
+    list_filter = ('message',  'status')
 
 
 @admin.register(ChatGroup)
 class ChatGroupAdmin(admin.ModelAdmin):
-    list_display = ('group_id', 'name', 'created_at')
-    search_fields = ('name',  'created_at')
-    list_filter = ('name', 'created_at')
-
-
-
-@admin.register(MessageStatus)
-class MessageStatusAdmin(admin.ModelAdmin):
-    list_display = ('message', 'user', 'status', 'timestamp')
-    search_fields = ('message', 'user', 'status')
-    list_filter = ('message',  'status')
+    list_display = ('id', 'name', 'created_by')
+    list_filter = ('created_by',)

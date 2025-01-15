@@ -26,11 +26,15 @@ class RealTimeMessages(models.Model):
         choices=[('TEXT', 'Text'), ('IMAGE', 'Image'), ('FILE', 'File')], 
         default='TEXT'
     )
-    status = models.CharField(
-        max_length=20, 
-        choices=[('SENT', 'Sent'), ('DELIVERED', 'Delivered'), ('FAILED', 'Failed'), ('RECEIVED', 'Received'), ('READ', 'Read')]
-    )
     timestamp = models.DateTimeField(auto_now_add=True)
+    status =  models.CharField(
+        max_length=20,
+        choices=[
+            ('SENT', 'Sent'),
+            ('FAILED', 'Failed'),
+        ],
+        default='SENT'
+    )
 
     class Meta:
         indexes = [
@@ -45,26 +49,29 @@ class RealTimeMessages(models.Model):
 
 
 class ChatGroup(models.Model):
-    group_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    name = models.CharField(max_length=255)
-    admin = models.ForeignKey(AppUsers, on_delete=models.CASCADE, related_name="admin_groups")
-    members = models.ManyToManyField(AppUsers, related_name="chat_groups")  # Changed related_name
+    name = models.CharField(max_length=100)
+    members = models.ManyToManyField(AppUsers, related_name="group")
+    created_by = models.ForeignKey(AppUsers, on_delete=models.CASCADE, related_name='admin')
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.name
 
 
 
-
-class MessageStatus(models.Model):
-    message = models.ForeignKey(RealTimeMessages, on_delete=models.CASCADE, related_name="statuses")
-    user = models.ForeignKey(AppUsers, on_delete=models.CASCADE)
+class ReadRecipient(models.Model):
+    message = models.ForeignKey(RealTimeMessages, on_delete=models.CASCADE, related_name="recipients")
+    recipient = models.ForeignKey(AppUsers, on_delete=models.CASCADE, related_name="read_by")
     status = models.CharField(
-        max_length=20, 
-        choices=[('SENT', 'Sent'), ('DELIVERED', 'Delivered'), ('READ', 'Read')]
+        max_length=20,
+        choices=[
+            ('SENT', 'Sent'),
+            ('DELIVERED', 'Delivered'),
+            ('FAILED', 'Failed'),
+            ('RECEIVED', 'Received'),
+            ('READ', 'Read'),
+        ],
+        default='SENT'
     )
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.status} at {self.timestamp}"
+        return f"{self.recipient.username} - {self.status} for {self.message}"

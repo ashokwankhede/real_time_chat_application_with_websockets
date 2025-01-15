@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from .forms import AppUserRegistrationForm, UserLoginForm
 from django.contrib.auth import authenticate, login
-from .models import AppUsers
+from .models import AppUsers, ChatGroup
 
 
 
@@ -46,6 +46,8 @@ def login_view(request):
 @csrf_exempt
 def chat_page(request):
     users = AppUsers.objects.all().order_by('-date_joined')
-    return render(request, 'chat_app/chat.html', {'users': users})
+    groups = ChatGroup.objects.all().order_by('-created_at')
+    return render(request, 'chat_app/chat.html', {'users': users, 'groups':groups})
+    
 
 

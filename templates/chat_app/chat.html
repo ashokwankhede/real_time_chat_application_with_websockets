@@ -1,58 +1,89 @@
-<!-- chat.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Room</title>
-    <h1>Welcome, {{ user.username }}!</h1>
-    <p>You have successfully logged in.</p>
-    <label for="">Select Contact: </label>
-    <select name="receiverName" id="receiverName"> 
-        {% for user in users %}
-            <option value="{{user.username}}">{{user.username}}</option>
-        {% endfor %}
-    </select>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        const user = "{{ user.id }}"; // Ensure user ID is used, not username
-        console.log("User ID:", user);
-    
-        const socket = new WebSocket(`wss://${window.location.host}/chat/?user_id=${user}`);
-    
-        socket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            const sender = data.sender; // Sender of the message
-            const message = data.message;
-    
-            const chatBox = document.getElementById('chat-box');
-            chatBox.innerHTML += `<p><strong>${sender === user ? 'You' : sender}:</strong> ${message}</p>`;
-            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
-        };
-    
-        function sendMessage() {
-            const receiverName = document.getElementById('receiverName').value; // Get selected receiver
-            const message = document.getElementById('message-input').value;
-    
-            if (!receiverName || !message) {
-                alert("Please select a receiver and type a message.");
-                return;
-            }
-    
-            socket.send(JSON.stringify({ 
-                'message': message, 
-                'receiver_id': receiverName 
-            }));
-            document.getElementById('message-input').value = '';
-        }
-    </script>
-    
 </head>
 <body>
+    <h1>Welcome, {{ user.username }}!</h1>
+    <p>You have successfully logged in.</p>
+
+    <label for="receiverName">Select Contact: </label>
+    <select name="receiverName" id="receiverName">
+        <option value="" selected disabled>Select User:</option> 
+        {% for user in users %}
+            <option value="{{ user.username }}">{{ user.username }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="group">Select Group:</label>
+    <select name="group" id="group">
+        <option value="" selected disabled>Select Group:</option>
+        {% for group in groups %}
+        <option value="{{group.name}}">{{group.name}}</option>
+        {% endfor %}
+    </select>
+
     <div id="chat-box" style="border: 1px solid #000; height: 400px; overflow-y: scroll;">
         <!-- Messages will appear here -->
     </div>
+
     <input type="text" id="message-input" placeholder="Type a message...">
     <button onclick="sendMessage()">Send</button>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <script>
+        const userId = "{{ user.username }}";
+        // const group = $('#group').val();
+        const group = 'MyGroup'
+        console.log(`User Id: ${userId}`)
+        const socket = new WebSocket(`ws://${window.location.host}/chat/?user_id=${userId}&group_name=${group}`);
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const sender = data.sender;
+            const message = data.message;
+            const messageId = data.message_id
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<p><strong>${sender === userId ? 'You' : sender}:</strong> ${message}</p>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+            setTimeout(() => {
+                markReadReceipt(messageId)
+            }, 1000);
+        };
+
+        function sendMessage() {
+            const receiverId = document.getElementById('receiverName').value; 
+            console.log(`Receiver Id: ${receiverId}`)
+            const message = document.getElementById('message-input').value;
+            
+            if ( !message) {
+                alert("Please select a receiver and type a message.");
+                return;
+            } else if(receiverId === userId){
+                alert("User is selected as the message sender")
+                return;
+            }
+
+            socket.send(JSON.stringify({ 
+                'message': message, 
+                'receiver_id': receiverId,
+                'event':'send_message'
+            }));
+            document.getElementById('message-input').value = '';
+        }
+
+        function markReadReceipt(messageId) {
+            if (!messageId){
+                console.log("Missing Message Id")
+                return;
+            }
+
+            socket.send(JSON.stringify({
+                'event':'read_receipt',
+                'message_id':messageId
+            }))
+        }
+    </script>
 </body>
 </html>
